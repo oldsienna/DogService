@@ -1,4 +1,5 @@
 #!flask/bin/python
+import os
 from flask import Flask, jsonify, abort, request, make_response, url_for
 
 app = Flask(__name__, static_url_path = "")
@@ -16,7 +17,7 @@ dogs = [
         'id': 1,
         'registration_id': u'P1234',
         'name': u'Fido',
-        'description': u'Milk, Cheese, Pizza, Fruit, Tylenol', 
+        'description': u'Friendly fluff ball', 
         'handler_id': 1,
         'reg_status': True,
         'vacc_status': False,
@@ -25,8 +26,8 @@ dogs = [
     {
         'id': 2,
         'registration_id': u'G2345',
-        'name': u'Learn Python',
-        'description': u'Need to find a good Python tutorial on the web', 
+        'name': u'Rexx',
+        'description': u'Good guard dog', 
         'handler_id': 2,
         'reg_status': True,
         'vacc_status': True,
@@ -43,35 +44,35 @@ def make_public_dog(dog):
             new_dog[field] = dog[field]
     return new_dog
     
-@app.route('/todo/api/v1.0/dogs', methods = ['GET'])
-#@auth.login_required
+@app.route('/api/v1.0/dogs', methods = ['GET'])
 def get_dogs():
     return jsonify( { 'dogs': map(make_public_dog, dogs) } )
 
-@app.route('/todo/api/v1.0/dogs/<int:dog_id>', methods = ['GET'])
-#@auth.login_required
+@app.route('/api/v1.0/dog/<int:dog_id>', methods = ['GET'])
 def get_dog(dog_id):
     dog = filter(lambda t: t['id'] == dog_id, dogs)
     if len(dog) == 0:
         abort(404)
     return jsonify( { 'dog': make_public_dog(dog[0]) } )
 
-@app.route('/todo/api/v1.0/dogs', methods = ['POST'])
-#@auth.login_required
+@app.route('/api/v1.0/dog', methods = ['POST'])
 def create_dog():
     if not request.json or not 'name' in request.json:
         abort(400)
     dog = {
         'id': dogs[-1]['id'] + 1,
+        'registration_id': request.json['registration_id'],
         'name': request.json['name'],
         'description': request.json.get('description', ""),
-        'done': False
+        'handler_id': request.json.get('handler_id'),
+        'pedigree': request.json.get('pedigree'),
+        'reg_status': False,
+        'vacc_status': False
     }
     dogs.append(dog)
     return jsonify( { 'dog': make_public_dog(dog) } ), 201
 
-@app.route('/todo/api/v1.0/dogs/<int:dog_id>', methods = ['PUT'])
-#@auth.login_required
+@app.route('/api/v1.0/dog/<int:dog_id>', methods = ['PUT'])
 def update_dog(dog_id):
     dog = filter(lambda t: t['id'] == dog_id, dogs)
     if len(dog) == 0:
@@ -82,15 +83,24 @@ def update_dog(dog_id):
         abort(400)
     if 'description' in request.json and type(request.json['description']) is not unicode:
         abort(400)
-    if 'done' in request.json and type(request.json['done']) is not bool:
+    if 'registration_id' in request.json and type(request.json['registration_id']) is not unicode:
+        abort(400)
+    if 'handler_id' in request.json and type(request.json['handler_id']) is not int:
+        abort(400)
+    if 'reg_status' in request.json and type(request.json['reg_status']) is not bool:
+        abort(400)
+    if 'vacc_status' in request.json and type(request.json['vacc_status']) is not bool:
+        abort(400)
+    if 'pedigree' in request.json and type(request.json['pedigree']) is not unicode:
         abort(400)
     dog[0]['name'] = request.json.get('name', dog[0]['name'])
     dog[0]['description'] = request.json.get('description', dog[0]['description'])
-    dog[0]['done'] = request.json.get('done', dog[0]['done'])
+    dog[0]['handler_id'] = request.json.get('handler_id', dog[0]['handler_id'])
+    dog[0]['reg_status'] = request.json.get('reg_status', dog[0]['reg_status'])
+    dog[0]['vacc_status'] = request.json.get('vacc_status', dog[0]['vacc_status'])
     return jsonify( { 'dog': make_public_dog(dog[0]) } )
     
-@app.route('/todo/api/v1.0/dogs/<int:dog_id>', methods = ['DELETE'])
-#@auth.login_required
+@app.route('/api/v1.0/dog/<int:dog_id>', methods = ['DELETE'])
 def delete_dog(dog_id):
     dog = filter(lambda t: t['id'] == dog_id, dogs)
     if len(dog) == 0:
@@ -99,4 +109,4 @@ def delete_dog(dog_id):
     return jsonify( { 'result': True } )
     
 if __name__ == '__main__':
-    app.run(debug = True)
+    app.run(debug=True, host='0.0.0.0', port=int(os.getenv('PORT', '5000')))
