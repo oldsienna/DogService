@@ -97,4 +97,4 @@ def delete_dog(dog_id):
 # Initialise DB before starting web service
 models.init_db()
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=int(os.getenv('PORT', '5000')))
+    app.run(debug=False, host='0.0.0.0', port=int(os.getenv('PORT', '5000')), threaded=True)
