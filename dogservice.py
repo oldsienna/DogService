@@ -36,6 +36,7 @@ def get_dog(dog_id):
 # Service Call for creating a new dog
 @app.route('/api/v1.0/dog', methods = ['POST'])
 def create_dog():
+    # Check for JSON input and mandatory dog name
     if not request.json or not 'name' in request.json:
         abort(400)
     dog = {
@@ -88,7 +89,7 @@ def update_dog(dog_id):
 @app.route('/api/v1.0/dog/<string:dog_id>', methods = ['DELETE'])
 def delete_dog(dog_id):
     dog = models.get_dog(dog_id)
-    if len(dog) == 0:
+    if dog is None:
         abort(404)
     models.delete_dog(dog_id)
     return jsonify( { 'result': True } )
