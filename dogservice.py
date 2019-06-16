@@ -6,27 +6,23 @@ from flask import Flask, jsonify, abort, request, make_response, url_for
 
 app = Flask(__name__)
 
+# Error Handler for 400: Bad Request
 @app.errorhandler(400)
 def not_found(error):
     return make_response(jsonify( { 'error': 'Bad request' } ), 400)
 
+# Error Handler for 404: Not Found 
 @app.errorhandler(404)
 def not_found(error):
     return make_response(jsonify( { 'error': 'Not found' } ), 404)
-
-def make_public_dog(dog):
-    new_dog = {}
-    for field in dog:
-        if field == 'id':
-            new_dog['uri'] = url_for('get_dog', dog_id = dog['id'], _external = True)
-        else:
-            new_dog[field] = dog[field]
-    return new_dog
     
+# Service Call for retrieving list of dogs
 @app.route('/api/v1.0/dogs', methods = ['GET'])
 def get_dogs():
-    return jsonify( { 'dogs': map(make_public_dog, dogs) } )
+    dogs = models.get_dogs()
+    return jsonify( { 'dogs': dogs } ), 201
 
+# Service Call for retrieving a dog's details using id
 @app.route('/api/v1.0/dog/<string:dog_id>', methods = ['GET'])
 def get_dog(dog_id):
     dog = models.get_dog(dog_id)
@@ -37,6 +33,7 @@ def get_dog(dog_id):
 
     return jsonify( { 'dog': dog })
 
+# Service Call for creating a new dog
 @app.route('/api/v1.0/dog', methods = ['POST'])
 def create_dog():
     if not request.json or not 'name' in request.json:
@@ -55,6 +52,7 @@ def create_dog():
 
     return jsonify( { 'dog': dog } ), 201
 
+# Service Call for updating a dog
 @app.route('/api/v1.0/dog/<string:dog_id>', methods = ['PUT'])
 def update_dog(dog_id):
     dog = models.get_dog(dog_id)
@@ -85,7 +83,8 @@ def update_dog(dog_id):
     models.update_dog(dog)
 
     return jsonify( { 'dog': dog } )
-    
+
+# Service Call for deleting a dog
 @app.route('/api/v1.0/dog/<string:dog_id>', methods = ['DELETE'])
 def delete_dog(dog_id):
     dog = models.get_dog(dog_id)

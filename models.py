@@ -34,6 +34,7 @@ def db_conn():
 def init_db():
     db_conn() # Connect to database
 
+# Create a new dog entry
 def new_dog(dog):
     # If dog id already exists in the system then raise an error
     dog_exists = db.dog_details.find_one({'registration_id': dog['registration_id']})
@@ -51,8 +52,8 @@ def new_dog(dog):
  
 	return str(_id)
 
+# Retrieve a dog by id
 def get_dog(dog_id):
-    # Retrieve a dog by id
     dog_rec = db.dog_details.find_one({'_id': ObjectId(dog_id)})
     # Check if dog exists
     if dog_rec:
@@ -70,6 +71,26 @@ def get_dog(dog_id):
     else:
         return None
 
+# Return an array of dog details, limited by max_number
+def get_dogs(max_number = 10):
+    dogs = []
+
+    for dog in db.dog_details.find().sort("name", 1).limit(max_number):
+        dog = {
+            'id': str(dog.get('_id')),
+            'registration_id': dog.get('registration_id'),
+            'name': dog.get('name'),
+            'description': dog.get('description'),
+            'handler_id': dog.get('handler_id'),
+            'pedigree': dog.get('pedigree'),
+            'reg_status': dog.get('reg_status'),
+            'vacc_status': dog.get('vacc_status')
+        }
+        dogs.append(dog)
+
+    return dogs
+
+# Update a dog record
 def update_dog(dog):
     # Update dog fields if present
     db.dog_details.update_one({'_id': ObjectId(dog['id'])},
@@ -84,5 +105,6 @@ def update_dog(dog):
                     upsert=True)
     return
 
+# Delete a dog by id
 def delete_dog(dog_id):
     db.dog_details.delete_one({'_id': ObjectId(dog_id)})
