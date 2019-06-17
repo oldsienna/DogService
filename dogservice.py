@@ -61,13 +61,13 @@ def update_dog(dog_id):
         abort(404)
     if not request.json:
         abort(400)
-    if 'name' in request.json and type(request.json['name']) != unicode:
+    if 'name' in request.json and type(request.json['name']) is not unicode:
         abort(400)
     if 'description' in request.json and type(request.json['description']) is not unicode:
         abort(400)
     if 'registration_id' in request.json and type(request.json['registration_id']) is not unicode:
         abort(400)
-    if 'handler_id' in request.json and type(request.json['handler_id']) is not int:
+    if 'handler_id' in request.json and type(request.json['handler_id']) is not unicode:
         abort(400)
     if 'reg_status' in request.json and type(request.json['reg_status']) is not bool:
         abort(400)
