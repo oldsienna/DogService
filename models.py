@@ -41,8 +41,7 @@ def new_dog(dog):
 
     if not dog_exists:
         # Add dog to database
-        return_code = 0
-        _id = db.dog_details.insert({'registration_id': dog['registration_id'],
+        _id = db.dog_details.insert_one({'registration_id': dog['registration_id'],
                                     'description': dog['description'],
                                     'handler_id': dog['handler_id'],
                                     'name': dog['name'],
@@ -50,7 +49,7 @@ def new_dog(dog):
                                     'reg_status': dog['reg_status'],
                                     'vacc_status': dog['vacc_status']})
  
-	return str(_id)
+	return str(_id.inserted_id)
 
 # Retrieve a dog by id
 def get_dog(dog_id):
@@ -108,3 +107,22 @@ def update_dog(dog):
 # Delete a dog by id
 def delete_dog(dog_id):
     db.dog_details.delete_one({'_id': ObjectId(dog_id)})
+
+# Generic search by criteria (dictionary of fields)
+def search(criteria):
+    dogs = []
+
+    for dog in db.dog_details.find(criteria):
+        dog = {
+            'id': str(dog.get('_id')),
+            'registration_id': dog.get('registration_id'),
+            'name': dog.get('name'),
+            'description': dog.get('description'),
+            'handler_id': dog.get('handler_id'),
+            'pedigree': dog.get('pedigree'),
+            'reg_status': dog.get('reg_status'),
+            'vacc_status': dog.get('vacc_status')   
+        }
+        dogs.append(dog)
+    
+    return dogs
